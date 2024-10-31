@@ -7,7 +7,7 @@ import numpy as np
 from heapq import heappush, heappop
 import math
 
-k = 2  # Penalty constant for angle change
+k = 4  # Penalty constant for angle change
 
 # Calculates Euclidean distance heuristic from current
 # position to the goal (estimates the cost)
@@ -15,6 +15,7 @@ def heuristic(curr_row, curr_column, end_row, end_column):
     return math.hypot(end_row - curr_row, end_column - curr_column)
 
 # Identifies valid cells that the robot can move to
+# and returns a list of valid cells (neighbors)
 def find_neighbors(curr_row, curr_column, matrix):
     neighbors = []
     rows, cols = matrix.shape # Gets num of rows and cols
@@ -29,15 +30,12 @@ def find_neighbors(curr_row, curr_column, matrix):
         (-1, 1, 7)    # Down-Right
     ]
     
-    # Iterates through possible directions and checks if they are valid
-    # valid moves are calculated and the cells are stored in a list
-    # called neighbors
+    # Iterates through all directions and checks for validity.
+    # Calculates valid moves and stores them in a list (neighbors)
     for d_row, d_col, action in directions:
         new_row, new_column = curr_row + d_row, curr_column + d_col
-        
         if 0 <= new_row < rows and 0 <= new_column < cols:
             if matrix[new_row, new_column] != '1':
-                # For diagonal moves, adjust corner-cutting logic
                 if abs(d_row) == 1 and abs(d_col) == 1: # Diagonal case
                     # Cells adjacent in horizontal and vertical directions
                     adj_cell1 = (curr_row + d_row, curr_column)
@@ -51,7 +49,7 @@ def find_neighbors(curr_row, curr_column, matrix):
                         neighbors.append((new_row, new_column, d_row, d_col, action))
                 else: # Non-diagonal case
                     neighbors.append((new_row, new_column, d_row, d_col, action))
-        print(neighbors)
+        #print(neighbors)
     return neighbors
 
 # Finds shortest path to the goal
@@ -66,10 +64,8 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
 
     while frontier:
         priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
-
         if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
             return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
-
         # Explore neighbors
         for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
             new_node = (neighbor_row, neighbor_column)
@@ -138,7 +134,6 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
     return (path, actions, f_values)
 
 def main():
-    start_time = time.time()
     if len(sys.argv) < 3:
         print("Usage: python script.py <grid_file> <output_file>")
         sys.exit(1)
@@ -166,7 +161,7 @@ def main():
         print(f"Error reading file: {e}")
         sys.exit(1)
 
-    # Reverse the matrix to match your coordinate system
+    # Reverses the matrix to match the coordinate system
     matrix = matrix[::-1]
 
     # Convert matrix to numpy array
@@ -177,7 +172,6 @@ def main():
         sys.exit(1)
 
     rows, cols = matrix_np.shape
-
     # Print the dimensions of the grid
     print(f"Grid dimensions: {rows} rows x {cols} columns")
 
