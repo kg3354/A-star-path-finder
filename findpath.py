@@ -1,18 +1,23 @@
+# Project 1: Robot Path Planning
+# CS4613
+# Team Members: Kaiwen Guo, Andy Lee
+
 import sys
 import numpy as np
 from heapq import heappush, heappop
 import math
 
-k = 1  # Penalty constant for angle change
+k = 2  # Penalty constant for angle change
 
+# Calculates Euclidean distance heuristic from current
+# position to the goal (estimates the cost)
 def heuristic(curr_row, curr_column, end_row, end_column):
-    # Euclidean distance heuristic
     return math.hypot(end_row - curr_row, end_column - curr_column)
 
+# Identifies valid cells that the robot can move to
 def find_neighbors(curr_row, curr_column, matrix):
     neighbors = []
-    rows, cols = matrix.shape
-    # Movement directions and action numbers
+    rows, cols = matrix.shape # Gets num of rows and cols
     directions = [  # (d_row, d_col, action)
         (0, 1, 0),    # Right
         (1, 1, 1),    # Up-Right
@@ -23,15 +28,17 @@ def find_neighbors(curr_row, curr_column, matrix):
         (-1, 0, 6),   # Down
         (-1, 1, 7)    # Down-Right
     ]
+    
+    # Iterates through possible directions and checks if they are valid
+    # valid moves are calculated and the cells are stored in a list
+    # called neighbors
     for d_row, d_col, action in directions:
         new_row, new_column = curr_row + d_row, curr_column + d_col
-
-        # Check if within bounds
+        
         if 0 <= new_row < rows and 0 <= new_column < cols:
-            # Check if the target cell is walkable
             if matrix[new_row, new_column] != '1':
                 # For diagonal moves, adjust corner-cutting logic
-                if abs(d_row) == 1 and abs(d_col) == 1:
+                if abs(d_row) == 1 and abs(d_col) == 1: # Diagonal case
                     # Cells adjacent in horizontal and vertical directions
                     adj_cell1 = (curr_row + d_row, curr_column)
                     adj_cell2 = (curr_row, curr_column + d_col)
@@ -42,12 +49,12 @@ def find_neighbors(curr_row, curr_column, matrix):
                                           matrix[adj_cell2] != '1')
                     if walkable_adj_cell1 or walkable_adj_cell2:
                         neighbors.append((new_row, new_column, d_row, d_col, action))
-                    # If both adjacent cells are obstacles, skip this diagonal move
-                else:
-                    # Non-diagonal move; add to neighbors
+                else: # Non-diagonal case
                     neighbors.append((new_row, new_column, d_row, d_col, action))
+        print(neighbors)
     return neighbors
 
+# Finds shortest path to the goal
 def a_star_search(matrix, start_row, start_column, end_row, end_column):
     frontier = []
     # θ(s) is None at the start
@@ -60,8 +67,7 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
     while frontier:
         priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
 
-        # Check if the goal is reached
-        if (curr_row, curr_column) == (end_row, end_column):
+        if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
             return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
 
         # Explore neighbors
@@ -89,7 +95,6 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
                 c_a = k * (delta_theta / 180)
 
             c = c_d + c_a
-
             new_cost = current_cost + c
 
             if ((neighbor_row, neighbor_column) not in cost_so_far or
@@ -133,6 +138,7 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
     return (path, actions, f_values)
 
 def main():
+    start_time = time.time()
     if len(sys.argv) < 3:
         print("Usage: python script.py <grid_file> <output_file>")
         sys.exit(1)
