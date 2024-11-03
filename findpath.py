@@ -7,7 +7,7 @@ import numpy as np
 from heapq import heappush, heappop
 import math
 
-k = 4  # Penalty constant for angle change
+k = 0  # Penalty constant for angle change
 
 # Calculates Euclidean distance heuristic from current
 # position to the goal (estimates the cost)
@@ -65,6 +65,7 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
     while frontier:
         priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
         if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
+            print(came_from)
             return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
         # Explore neighbors
         for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
@@ -109,6 +110,9 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
     actions = []
     f_values = []
     current = (end_row, end_column)
+    # goal_trace_count = sum(1 for pos in came_from if pos == (end_row, end_column))
+    # if goal_trace_count > 1:
+    #     ("Warning: Goal is traced multiple times.")
     while current != (start_row, start_column):
         prev_info = came_from.get(current)
         if prev_info is None:
@@ -131,6 +135,10 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
     # Ensure we don't overwrite the start and goal positions
     matrix[start_row, start_column] = '2'
     matrix[end_row, end_column] = '5'
+    print("Matrix after path reconstruction:")
+    for row in matrix:
+        print(' '.join(row))
+
     return (path, actions, f_values)
 
 def main():
@@ -163,6 +171,11 @@ def main():
 
     # Reverses the matrix to match the coordinate system
     matrix = matrix[::-1]
+    # After reading and reversing the matrix initially
+    print("Matrix after initial read and reversal:")
+    for row in matrix:
+        print(' '.join(row))
+
 
     # Convert matrix to numpy array
     try:
