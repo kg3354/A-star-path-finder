@@ -65,6 +65,7 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
     while frontier:
         priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
         if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
+            #print(came_from)
             return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
         # Explore neighbors
         for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
@@ -105,10 +106,17 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
     return None, None, nodes_generated
 
 def reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix):
+    # Matrix is as expected
+    # print("Matrix before path reconstruction:")
+    # for row in matrix:
+    #     print(' '.join(row))
     path = []
     actions = []
     f_values = []
     current = (end_row, end_column)
+    # goal_trace_count = sum(1 for pos in came_from if pos == (end_row, end_column))
+    # if goal_trace_count > 1:
+    #     ("Warning: Goal is traced multiple times.")
     while current != (start_row, start_column):
         prev_info = came_from.get(current)
         if prev_info is None:
@@ -130,7 +138,14 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
             matrix[r, c] = '4'
     # Ensure we don't overwrite the start and goal positions
     matrix[start_row, start_column] = '2'
-    matrix[end_row, end_column] = '5'
+    # Line below resulted in double goal nodes for Input3.txt
+    #matrix[end_row, end_column] = '5'
+    
+    # Extra 5 was being added.
+    # print("Matrix after path reconstruction:")
+    # for row in matrix:
+    #     print(' '.join(row))
+
     return (path, actions, f_values)
 
 def main():
