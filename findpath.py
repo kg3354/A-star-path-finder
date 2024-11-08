@@ -7,7 +7,7 @@ import numpy as np
 from heapq import heappush, heappop
 import math
 
-k = 1  # Penalty constant for angle change
+k = 0  # Penalty constant for angle change
 
 # Calculates Euclidean distance heuristic from current
 # position to the goal (estimates the cost)
@@ -124,7 +124,7 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
         f_values.append(f_n)
         current = prev_node
     path.append((start_row, start_column))
-    f_values.append(heuristic(start_row, start_column, end_row, end_column))  # f(n) of start node
+    # f_values.append(heuristic(start_row, start_column, end_row, end_column))  # f(n) of start node
     path.reverse()
     actions.reverse()
     f_values.reverse()
