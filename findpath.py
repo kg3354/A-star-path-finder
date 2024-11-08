@@ -18,7 +18,7 @@ def heuristic(curr_row, curr_column, end_row, end_column):
 # and returns a list of valid cells (neighbors)
 def find_neighbors(curr_row, curr_column, matrix):
     neighbors = []
-    rows, cols = matrix.shape # Gets num of rows and cols
+    rows, cols = matrix.shape  # Gets num of rows and cols
     directions = [  # (d_row, d_col, action)
         (0, 1, 0),    # Right
         (1, 1, 1),    # Up-Right
@@ -29,14 +29,14 @@ def find_neighbors(curr_row, curr_column, matrix):
         (-1, 0, 6),   # Down
         (-1, 1, 7)    # Down-Right
     ]
-    
+
     # Iterates through all directions and checks for validity.
     # Calculates valid moves and stores them in a list (neighbors)
     for d_row, d_col, action in directions:
         new_row, new_column = curr_row + d_row, curr_column + d_col
         if 0 <= new_row < rows and 0 <= new_column < cols:
             if matrix[new_row, new_column] != '1':
-                if abs(d_row) == 1 and abs(d_col) == 1: # Diagonal case
+                if abs(d_row) == 1 and abs(d_col) == 1:  # Diagonal case
                     # Cells adjacent in horizontal and vertical directions
                     adj_cell1 = (curr_row + d_row, curr_column)
                     adj_cell2 = (curr_row, curr_column + d_col)
@@ -47,76 +47,26 @@ def find_neighbors(curr_row, curr_column, matrix):
                                           matrix[adj_cell2] != '1')
                     if walkable_adj_cell1 or walkable_adj_cell2:
                         neighbors.append((new_row, new_column, d_row, d_col, action))
-                else: # Non-diagonal case
+                else:  # Non-diagonal case
                     neighbors.append((new_row, new_column, d_row, d_col, action))
-        #print(neighbors)
     return neighbors
 
 # Finds shortest path to the goal
-#def a_star_search(matrix, start_row, start_column, end_row, end_column):
-#    frontier = []
-#    # θ(s) is None at the start
-#    heappush(frontier, (heuristic(start_row, start_column, end_row, end_column),
-#                        start_row, start_column, None, 0, None, heuristic(start_row, start_column, end_row, end_column)))  # priority, row, col, theta_s, cost, action, f(n)
-#    came_from = {}  # To track the path: (current node) -> (previous node, action, f(n))
-#    cost_so_far = {(start_row, start_column): (0, None)}  # cost and theta_s
-#    nodes_generated = 1  # Start node is generated
-#
-#    while frontier:
-#        priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
-#        if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
-#            #print(came_from)
-#            return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
-#        # Explore neighbors
-#        for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
-#            new_node = (neighbor_row, neighbor_column)
-#            if new_node in cost_so_far and cost_so_far[new_node][0] <= current_cost:
-#                continue  # Skip if we've already found a better path
-#
-#            # Compute θ(s') from movement vector
-#            theta_s_prime = math.degrees(math.atan2(d_row, d_col)) % 360
-#
-#            # Compute c_d(s, a, s')
-#            if abs(d_row) + abs(d_col) == 1:  # Orthogonal move
-#                c_d = 1
-#            else:  # Diagonal move
-#                c_d = math.sqrt(2)
-#
-#            # Compute c_a(s, a, s')
-#            if theta_s is None:  # Initial state
-#                c_a = 0
-#            else:
-#                delta_theta = abs(theta_s_prime - theta_s)
-#                if delta_theta > 180:
-#                    delta_theta = 360 - delta_theta
-#                c_a = k * (delta_theta / 180)
-#
-#            c = c_d + c_a
-#            new_cost = current_cost + c
-#
-#            if ((neighbor_row, neighbor_column) not in cost_so_far or
-#                    new_cost < cost_so_far[(neighbor_row, neighbor_column)][0]):
-#                cost_so_far[(neighbor_row, neighbor_column)] = (new_cost, theta_s_prime)
-#                total_estimated_cost = new_cost + heuristic(neighbor_row, neighbor_column, end_row, end_column)
-#                heappush(frontier, (total_estimated_cost, neighbor_row, neighbor_column, theta_s_prime, new_cost, action, total_estimated_cost))
-#                came_from[(neighbor_row, neighbor_column)] = ((curr_row, curr_column), action, total_estimated_cost)
-#                nodes_generated += 1
-#
-#    # If we exit the loop without finding the end, log that no path was found
-#    return None, None, nodes_generated
 def a_star_search(matrix, start_row, start_column, end_row, end_column):
     frontier = []
     # θ(s) is None at the start
     heappush(frontier, (heuristic(start_row, start_column, end_row, end_column),
                         start_row, start_column, None, 0, None, heuristic(start_row, start_column, end_row, end_column)))  # priority, row, col, theta_s, cost, action, f(n)
     came_from = {}  # To track the path: (current node) -> (previous node, action, f(n))
-    cost_so_far = {(start_row, start_column): (0, None)}  # cost and theta_s
-    nodes_generated = 1  # Start node is generated
+    cost_so_far = {}  # cost and theta_s
+    nodes_generated = 0
+
+    cost_so_far[(start_row, start_column)] = (0, None)
+    nodes_generated += 1  # Start node is generated
 
     while frontier:
         priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
-        if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
-            #print(came_from)
+        if (curr_row, curr_column) == (end_row, end_column):  # Check if the goal is reached
             return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
         # Explore neighbors
         for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
@@ -147,26 +97,22 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
 
             if ((neighbor_row, neighbor_column) not in cost_so_far or
                     new_cost < cost_so_far[(neighbor_row, neighbor_column)][0]):
+                is_new_node = (neighbor_row, neighbor_column) not in cost_so_far
                 cost_so_far[(neighbor_row, neighbor_column)] = (new_cost, theta_s_prime)
                 total_estimated_cost = new_cost + heuristic(neighbor_row, neighbor_column, end_row, end_column)
                 heappush(frontier, (total_estimated_cost, neighbor_row, neighbor_column, theta_s_prime, new_cost, action, total_estimated_cost))
                 came_from[(neighbor_row, neighbor_column)] = ((curr_row, curr_column), action, total_estimated_cost)
-                nodes_generated += 1
+                if is_new_node:
+                    nodes_generated += 1
 
     # If we exit the loop without finding the end, log that no path was found
     return None, None, nodes_generated
+
 def reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix):
-    # Matrix is as expected
-    # print("Matrix before path reconstruction:")
-    # for row in matrix:
-    #     print(' '.join(row))
     path = []
     actions = []
     f_values = []
     current = (end_row, end_column)
-    # goal_trace_count = sum(1 for pos in came_from if pos == (end_row, end_column))
-    # if goal_trace_count > 1:
-    #     ("Warning: Goal is traced multiple times.")
     while current != (start_row, start_column):
         prev_info = came_from.get(current)
         if prev_info is None:
@@ -188,13 +134,7 @@ def reconstruct_path(came_from, start_row, start_column, end_row, end_column, ma
             matrix[r, c] = '4'
     # Ensure we don't overwrite the start and goal positions
     matrix[start_row, start_column] = '2'
-    # Line below resulted in double goal nodes for Input3.txt
-    #matrix[end_row, end_column] = '5'
-    
-    # Extra 5 was being added.
-    # print("Matrix after path reconstruction:")
-    # for row in matrix:
-    #     print(' '.join(row))
+    # matrix[end_row, end_column] = '5'  # Uncomment if you want to mark the goal
 
     return (path, actions, f_values)
 
