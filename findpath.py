@@ -7,7 +7,7 @@ import numpy as np
 from heapq import heappush, heappop
 import math
 
-k = 4  # Penalty constant for angle change
+k = 1  # Penalty constant for angle change
 
 # Calculates Euclidean distance heuristic from current
 # position to the goal (estimates the cost)
@@ -53,6 +53,57 @@ def find_neighbors(curr_row, curr_column, matrix):
     return neighbors
 
 # Finds shortest path to the goal
+#def a_star_search(matrix, start_row, start_column, end_row, end_column):
+#    frontier = []
+#    # θ(s) is None at the start
+#    heappush(frontier, (heuristic(start_row, start_column, end_row, end_column),
+#                        start_row, start_column, None, 0, None, heuristic(start_row, start_column, end_row, end_column)))  # priority, row, col, theta_s, cost, action, f(n)
+#    came_from = {}  # To track the path: (current node) -> (previous node, action, f(n))
+#    cost_so_far = {(start_row, start_column): (0, None)}  # cost and theta_s
+#    nodes_generated = 1  # Start node is generated
+#
+#    while frontier:
+#        priority, curr_row, curr_column, theta_s, current_cost, action, f_n = heappop(frontier)
+#        if (curr_row, curr_column) == (end_row, end_column): # Check if the goal is reached
+#            #print(came_from)
+#            return reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix), current_cost, nodes_generated
+#        # Explore neighbors
+#        for neighbor_row, neighbor_column, d_row, d_col, action in find_neighbors(curr_row, curr_column, matrix):
+#            new_node = (neighbor_row, neighbor_column)
+#            if new_node in cost_so_far and cost_so_far[new_node][0] <= current_cost:
+#                continue  # Skip if we've already found a better path
+#
+#            # Compute θ(s') from movement vector
+#            theta_s_prime = math.degrees(math.atan2(d_row, d_col)) % 360
+#
+#            # Compute c_d(s, a, s')
+#            if abs(d_row) + abs(d_col) == 1:  # Orthogonal move
+#                c_d = 1
+#            else:  # Diagonal move
+#                c_d = math.sqrt(2)
+#
+#            # Compute c_a(s, a, s')
+#            if theta_s is None:  # Initial state
+#                c_a = 0
+#            else:
+#                delta_theta = abs(theta_s_prime - theta_s)
+#                if delta_theta > 180:
+#                    delta_theta = 360 - delta_theta
+#                c_a = k * (delta_theta / 180)
+#
+#            c = c_d + c_a
+#            new_cost = current_cost + c
+#
+#            if ((neighbor_row, neighbor_column) not in cost_so_far or
+#                    new_cost < cost_so_far[(neighbor_row, neighbor_column)][0]):
+#                cost_so_far[(neighbor_row, neighbor_column)] = (new_cost, theta_s_prime)
+#                total_estimated_cost = new_cost + heuristic(neighbor_row, neighbor_column, end_row, end_column)
+#                heappush(frontier, (total_estimated_cost, neighbor_row, neighbor_column, theta_s_prime, new_cost, action, total_estimated_cost))
+#                came_from[(neighbor_row, neighbor_column)] = ((curr_row, curr_column), action, total_estimated_cost)
+#                nodes_generated += 1
+#
+#    # If we exit the loop without finding the end, log that no path was found
+#    return None, None, nodes_generated
 def a_star_search(matrix, start_row, start_column, end_row, end_column):
     frontier = []
     # θ(s) is None at the start
@@ -104,7 +155,6 @@ def a_star_search(matrix, start_row, start_column, end_row, end_column):
 
     # If we exit the loop without finding the end, log that no path was found
     return None, None, nodes_generated
-
 def reconstruct_path(came_from, start_row, start_column, end_row, end_column, matrix):
     # Matrix is as expected
     # print("Matrix before path reconstruction:")
